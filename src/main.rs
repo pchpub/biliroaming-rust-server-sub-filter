@@ -14,8 +14,6 @@ lazy_static! {
 
 #[tokio::main]
 async fn main() {
-    // TODO 订阅筛选
-    // println!("Hello, world!");
     let clash = tokio::spawn( async move {
         println!("[Debug] Start a new thread, type: 2");
         let mut pid = None;
@@ -56,6 +54,8 @@ async fn main() {
     });
 
     let main_fn = tokio::spawn(async move {
+        CLASH_SENDER.send(1).await.unwrap();
+        sleep(Duration::from_secs(2)).await;
         loop{
             println!("[Debug] Start a new thread, type: 1");
             let config: Config = serde_json::from_reader(File::open("config.json").unwrap()).unwrap(); // 这样改配置就不需要重启了，每次检查都获取新配置
@@ -71,11 +71,10 @@ async fn main() {
                 }else{
                     continue;
                 };
-                for proxy_node in proxy_list {
-                    CLASH_SENDER.send(1).await.unwrap();
-                    sleep(Duration::from_secs(2)).await;
+                for proxy_node in proxy_list { 
                     if let Some(countrys) = check_bili_area(&proxy_node) {
                         for country in countrys {
+                            println!("{} -> {}", proxy_node["name"].as_str().unwrap(),country);
                             match country {
                                 bili_sub_filter::mods::check::Country::China => {
                                     cn_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node.clone());
@@ -99,7 +98,6 @@ async fn main() {
                             }
                         }
                     }
-                    CLASH_SENDER.send(0).await.unwrap();
                 }
             }
             serde_yaml::to_writer(File::create("./output/cn.yaml").unwrap(),&cn_nodes).unwrap_or_default();
@@ -108,6 +106,7 @@ async fn main() {
             serde_yaml::to_writer(File::create("./output/th.yaml").unwrap(),&th_nodes).unwrap_or_default();
             serde_yaml::to_writer(File::create("./output/sg.yaml").unwrap(),&sg_nodes).unwrap_or_default();
             serde_yaml::to_writer(File::create("./output/mo.yaml").unwrap(),&mo_nodes).unwrap_or_default();
+            println!("fi");
             sleep(Duration::from_secs(20*60)).await;
         }
     });
