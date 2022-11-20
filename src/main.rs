@@ -32,6 +32,7 @@ async fn main() {
                     }else{
                         None
                     };
+                    println!("pid th-1: {:?}", pid);
                 },
                 0 => {
                     match pid.clone() {
@@ -58,12 +59,12 @@ async fn main() {
         loop{
             println!("[Debug] Start a new thread, type: 1");
             let config: Config = serde_json::from_reader(File::open("config.json").unwrap()).unwrap(); // 这样改配置就不需要重启了，每次检查都获取新配置
-            let mut cn_nodes: serde_yaml::Mapping = serde_yaml::from_str("proxies:").unwrap();
-            let mut hk_nodes: serde_yaml::Mapping = serde_yaml::from_str("proxies:").unwrap();
-            let mut tw_nodes: serde_yaml::Mapping = serde_yaml::from_str("proxies:").unwrap();
-            let mut th_nodes: serde_yaml::Mapping = serde_yaml::from_str("proxies:").unwrap();
-            let mut sg_nodes: serde_yaml::Mapping = serde_yaml::from_str("proxies:").unwrap();
-            let mut mo_nodes: serde_yaml::Mapping = serde_yaml::from_str("proxies:").unwrap();
+            let mut cn_nodes:serde_yaml::Value = serde_yaml::from_str("proxies: []").unwrap();
+            let mut hk_nodes = cn_nodes.clone();
+            let mut tw_nodes = cn_nodes.clone();
+            let mut th_nodes = cn_nodes.clone();
+            let mut sg_nodes = cn_nodes.clone();
+            let mut mo_nodes = cn_nodes.clone();
             for sub in config.subs {
                 let proxy_list = if let Some(value) = get_proxy_list(&sub) {
                     value
@@ -73,27 +74,29 @@ async fn main() {
                 for proxy_node in proxy_list {
                     CLASH_SENDER.send(1).await.unwrap();
                     sleep(Duration::from_secs(2)).await;
-                    if let Some(value) = check_bili_area(&proxy_node) {
-                        match value {
-                            bili_sub_filter::mods::check::Country::China => {
-                                cn_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node);
-                            },
-                            bili_sub_filter::mods::check::Country::Taiwan => {
-                                tw_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node);
-                            },
-                            bili_sub_filter::mods::check::Country::Hongkang => {
-                                hk_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node);
-                            },
-                            bili_sub_filter::mods::check::Country::Thailand => {
-                                th_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node);
-                            },
-                            bili_sub_filter::mods::check::Country::Singapore => {
-                                sg_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node);
-                            },
-                            bili_sub_filter::mods::check::Country::Mongolia => {
-                                mo_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node);
-                            },
-                            bili_sub_filter::mods::check::Country::Unknown => (),
+                    if let Some(countrys) = check_bili_area(&proxy_node) {
+                        for country in countrys {
+                            match country {
+                                bili_sub_filter::mods::check::Country::China => {
+                                    cn_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node.clone());
+                                },
+                                bili_sub_filter::mods::check::Country::Taiwan => {
+                                    tw_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node.clone());
+                                },
+                                bili_sub_filter::mods::check::Country::Hongkang => {
+                                    hk_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node.clone());
+                                },
+                                bili_sub_filter::mods::check::Country::Thailand => {
+                                    th_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node.clone());
+                                },
+                                bili_sub_filter::mods::check::Country::Singapore => {
+                                    sg_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node.clone());
+                                },
+                                bili_sub_filter::mods::check::Country::Mongolia => {
+                                    mo_nodes["proxies"].as_sequence_mut().unwrap().push(proxy_node.clone());
+                                },
+                                bili_sub_filter::mods::check::Country::Unknown => (),
+                            }
                         }
                     }
                     CLASH_SENDER.send(0).await.unwrap();
