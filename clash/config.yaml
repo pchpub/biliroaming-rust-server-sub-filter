@@ -18,8 +18,8 @@ dns:
   - 119.29.29.29
   - 223.5.5.5
   - 114.114.114.114
-#external-controller: 127.0.0.1:1123
-#ipv6: true
+external-controller: 127.0.0.1:2671
+secret: JCasbciSCBAISw
 log-level: info
 mixed-port: 2670
 mode: rule
