@@ -1,20 +1,28 @@
-use std::{process::Command, fs::File};
+use std::{fs::File, process::Command};
 
-pub fn start_clash() -> Result<String,()>{
+pub fn start_clash() -> Result<String, ()> {
     // let output = if let Ok(value) = Command::new("nohup").arg("./clash/clash").arg("-d").arg("./clash/").arg(">").arg("/dev/null").arg("&").arg("echo").arg("$!").output() {
-    let output = if let Ok(value) = Command::new("./clash/clash").arg("-d").arg("./clash/").arg(">").arg("/dev/null").arg("&").arg("echo").arg("$!").output() {
-      value
-    }else{
+    let output = if let Ok(value) = Command::new("./clash/clash")
+        .arg("-d")
+        .arg("./clash/")
+        .arg(">")
+        .arg("/dev/null")
+        .arg("&")
+        .arg("echo")
+        .arg("$!")
+        .output()
+    {
+        value
+    } else {
         return Err(());
     };
     let output = String::from_utf8(output.stdout).unwrap_or("".to_owned());
-    println!("pid: {}",output);
+    println!("pid: {}", output);
     return Ok(output);
 }
 
-pub fn build_local_proxy_yaml(node: &serde_yaml::Value) -> Result<(),()> {
-    let raw_data = 
-r#"allow-lan: false
+pub fn build_local_proxy_yaml(node: &serde_yaml::Value) -> Result<(), ()> {
+    let raw_data = r#"allow-lan: false
 bind-address: '*'
 dns:
   default-nameserver:
@@ -61,9 +69,10 @@ rules:
 - MATCH,auto"#;
     let mut yaml_data: serde_yaml::Value = serde_yaml::from_str(raw_data).unwrap();
     yaml_data["proxies"] = serde_yaml::Value::Sequence(vec![node.clone()]);
-    yaml_data["proxy-groups"][0]["proxies"] = serde_yaml::Value::Sequence(vec![node["name"].clone()]);//node["name"].clone();
+    yaml_data["proxy-groups"][0]["proxies"] =
+        serde_yaml::Value::Sequence(vec![node["name"].clone()]); //node["name"].clone();
     let yaml_file = File::create("./clash/proxy.yaml").unwrap();
-    match serde_yaml::to_writer(yaml_file, &yaml_data){
+    match serde_yaml::to_writer(yaml_file, &yaml_data) {
         Ok(_) => Ok(()),
         Err(_) => Err(()),
     }
