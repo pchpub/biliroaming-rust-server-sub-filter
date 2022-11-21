@@ -4,7 +4,7 @@ use bili_sub_filter::mods::{
 };
 use lazy_static::lazy_static;
 use std::{fs::File, sync::Arc, time::Duration};
-use tokio::{join, process::Command, time::sleep};
+use tokio::{join, time::sleep};
 
 lazy_static! {
     pub static ref CONFIG: Config =
@@ -18,7 +18,7 @@ lazy_static! {
 async fn main() {
     let clash = tokio::spawn(async move {
         println!("[Debug] Start a new thread, type: 2");
-        let mut pid = None;
+        let mut _pid = None;
         loop {
             let channel_code = if let Ok(value) = CLASH_RECEIVER.recv().await {
                 value
@@ -27,29 +27,29 @@ async fn main() {
             };
             match channel_code {
                 1 => {
-                    pid = if let Ok(value) = start_clash() {
+                    _pid = if let Ok(value) = start_clash() {
                         Some(value.clone())
                     } else {
                         None
                     };
-                    println!("pid th-1: {:?}", pid);
+                    // println!("pid th-1: {:?}", pid); // 这下面都没用，留着以后处理了
                 }
-                0 => {
-                    match pid.clone() {
-                        Some(value) => {
-                            match Command::new("kill").arg("-9").arg(&value).output().await {
-                                Ok(_) => {
-                                    pid = None;
-                                }
-                                Err(_) => {
-                                    println!("[Debug] failed to kill clash");
-                                }
-                            };
-                        }
-                        None => (),
-                    }
-                    // Command::new("kill").arg("-9").arg().arg("echo").arg("$!").output()
-                }
+                // 0 => {
+                //     match pid.clone() {
+                //         Some(value) => {
+                //             match Command::new("kill").arg("-9").arg(&value).output().await {
+                //                 Ok(_) => {
+                //                     pid = None;
+                //                 }
+                //                 Err(_) => {
+                //                     println!("[Debug] failed to kill clash");
+                //                 }
+                //             };
+                //         }
+                //         None => (),
+                //     }
+                //     // Command::new("kill").arg("-9").arg().arg("echo").arg("$!").output()
+                // }
                 _ => {
                     panic!("Unexpected channel code")
                 }

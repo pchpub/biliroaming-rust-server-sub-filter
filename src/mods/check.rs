@@ -1,6 +1,8 @@
+use std::time::Duration;
+
 use crate::mods::request::update_proxy_provider;
 
-use super::{clash::build_local_proxy_yaml, request::getwebpage};
+use super::{clash::build_connectivity_yaml, request::getwebpage};
 
 pub fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
     fn check_main() -> Option<Country> {
@@ -9,6 +11,7 @@ pub fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
             "socks5h://127.0.0.1:2670",
             "Dalvik/2.1.0 (Linux; U; Android 11; 21091116AC Build/RP1A.200720.011",
             "",
+            &Duration::from_secs(1),
         )?;
         // println!("raw_data: {}", raw_data);
         let json_data: serde_json::Value = if let Ok(value) = serde_json::from_str(&raw_data) {
@@ -29,6 +32,7 @@ pub fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
             "socks5h://127.0.0.1:2670",
             "Dalvik/2.1.0 (Linux; U; Android 11; 21091116AC Build/RP1A.200720.011",
             "",
+            &Duration::from_secs(1),
         )?;
         println!(
             "{} -> ip-api raw_data: {}",
@@ -47,17 +51,16 @@ pub fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
             json_data["countryCode"].as_str().unwrap_or(""),
         ));
     }
-    match build_local_proxy_yaml(node) {
+    match build_connectivity_yaml(node) {
         Ok(_) => (),
         Err(_) => return None,
     }
     update_proxy_provider(
-        "http://43.142.236.21:2671/providers/proxies/Default",
+        "http://43.142.236.21:2671/providers/proxies/TestConnectivityt",
         "",
         "",
         "",
         "JCasbciSCBAISw",
-        &1,
     )
     .unwrap_or_default();
     let mut countrys = Vec::with_capacity(2);

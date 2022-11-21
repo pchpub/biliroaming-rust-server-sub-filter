@@ -20,35 +20,43 @@ dns:
   - 114.114.114.114
 external-controller: 127.0.0.1:2671
 secret: JCasbciSCBAISw
+#ipv6: true
 log-level: info
 mixed-port: 2670
 mode: rule
 proxies: null
 proxy-groups:
-- name: auto
+- name: connectivity
   type: select
   use:
-  - Default
+  - TestConnectivity
+- name: delay
+  type: select
+  use:
+  - TestDelay
 proxy-providers:
-  Default:
-    # health-check:
-    #   enable: true
-    #   interval: 600000
-    #   url: http://www.gstatic.com/generate_204
-    path: ./proxy.yaml
+  TestConnectivity:
+    path: ./test-connectivity.yaml
+    type: file
+  TestDelay:
+    health-check:
+      enable: true
+      interval: 600000
+      url: http://www.gstatic.com/generate_204
+    path: ./test-delay.yaml
     type: file
 rules:
-- DOMAIN-SUFFIX,google.com,auto
-- DOMAIN-KEYWORD,google,auto
-- DOMAIN,google.com,auto
-- DOMAIN-SUFFIX,bilibili.com,auto
-- DOMAIN-KEYWORD,bilibili,auto
-- DOMAIN,bilibili.com,auto
-- DOMAIN-SUFFIX,microsoft.com,auto
-- DOMAIN-SUFFIX,cachefly.net,auto
-- DOMAIN-SUFFIX,apple.com,auto
-- DOMAIN-SUFFIX,cdn-apple.com,auto
+- DOMAIN-SUFFIX,google.com,connectivity
+- DOMAIN-KEYWORD,google,connectivity
+- DOMAIN,google.com,connectivity
+- DOMAIN-SUFFIX,bilibili.com,connectivity
+- DOMAIN-KEYWORD,bilibili,connectivity
+- DOMAIN,bilibili.com,connectivity
+- DOMAIN-SUFFIX,microsoft.com,connectivity
+- DOMAIN-SUFFIX,cachefly.net,connectivity
+- DOMAIN-SUFFIX,apple.com,connectivity
+- DOMAIN-SUFFIX,cdn-apple.com,connectivity
 - SRC-IP-CIDR,192.168.1.201/32,DIRECT
 - IP-CIDR,127.0.0.0/8,DIRECT
 - GEOIP,CN,DIRECT
-- MATCH,auto
+- MATCH,connectivity

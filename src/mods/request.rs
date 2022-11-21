@@ -7,6 +7,7 @@ pub fn getwebpage(
     proxy_url: &str,
     user_agent: &str,
     cookie: &str,
+    timeout: &Duration,
 ) -> Option<String> {
     let mut data = Vec::new();
     let mut handle = Easy::new();
@@ -15,7 +16,7 @@ pub fn getwebpage(
     handle.ssl_verify_peer(false).unwrap();
     handle.post(false).unwrap();
     handle.useragent(user_agent).unwrap();
-    handle.connect_timeout(Duration::new(5, 0)).unwrap();
+    handle.connect_timeout(*timeout).unwrap();
     handle.cookie(cookie).unwrap();
     handle.proxy(proxy_url).unwrap();
 
@@ -51,7 +52,6 @@ pub fn update_proxy_provider(
     user_agent: &str,
     cookie: &str,
     authorization: &str,
-    dnt: &i32,
 ) -> Option<String> {
     let mut data = Vec::new();
     let mut handle = Easy::new();
@@ -66,7 +66,6 @@ pub fn update_proxy_provider(
     handle.cookie(cookie).unwrap();
     handle.proxy(proxy_url).unwrap();
     headers_list.append("Content-Length: 0").unwrap();
-    headers_list.append(&format!("DNT: {dnt}")).unwrap();
     headers_list.append(&format!("Authorization: Bearer {authorization}")).unwrap();
     handle.http_headers(headers_list).unwrap();
 
