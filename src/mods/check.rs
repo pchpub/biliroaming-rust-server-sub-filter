@@ -12,6 +12,7 @@ pub fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
             "Dalvik/2.1.0 (Linux; U; Android 11; 21091116AC Build/RP1A.200720.011",
             "",
             &Duration::from_secs(1),
+            "",
         )?;
         // println!("raw_data: {}", raw_data);
         let json_data: serde_json::Value = if let Ok(value) = serde_json::from_str(&raw_data) {
@@ -33,6 +34,7 @@ pub fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
             "Dalvik/2.1.0 (Linux; U; Android 11; 21091116AC Build/RP1A.200720.011",
             "",
             &Duration::from_secs(1),
+            "",
         )?;
         println!(
             "{} -> ip-api raw_data: {}",
@@ -56,7 +58,7 @@ pub fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
         Err(_) => return None,
     }
     update_proxy_provider(
-        "http://43.142.236.21:2671/providers/proxies/TestConnectivityt",
+        "http://127.0.0.1:2671/providers/proxies/TestConnectivity",
         "",
         "",
         "",

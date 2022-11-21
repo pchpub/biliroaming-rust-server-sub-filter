@@ -1,4 +1,6 @@
-use std::{fs::File, process::Command};
+use std::{fs::File, process::Command, time::Duration};
+
+use super::request::getwebpage;
 
 pub fn start_clash() -> Result<String, ()> {
     // let output = if let Ok(value) = Command::new("nohup").arg("./clash/clash").arg("-d").arg("./clash/").arg(">").arg("/dev/null").arg("&").arg("echo").arg("$!").output() {
@@ -45,4 +47,13 @@ pub fn build_delay_yaml(nodes: &Vec<serde_yaml::Value>) -> Result<(), ()> {
         Ok(_) => Ok(()),
         Err(_) => Err(()),
     }
+}
+
+pub async fn get_delay_nodes() -> Option<Vec<serde_json::Value>> {
+    let json_data: serde_json::Value = if let Ok(value) = serde_json::from_str(&getwebpage("http://127.0.0.1:2671/providers/proxies/TestDelay", "", "", "", &Duration::from_secs(5), "JCasbciSCBAISw").unwrap_or_default()){
+        value
+    }else{
+        return None;
+    };
+    return Some(json_data["proxies"].as_array().unwrap().clone());
 }

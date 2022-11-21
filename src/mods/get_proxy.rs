@@ -3,7 +3,7 @@ use std::time::Duration;
 use super::request::getwebpage;
 
 fn get_proxy_provider(url: &str) -> Option<serde_yaml::Mapping> {
-    let raw_data = getwebpage(url, "", "Clash/1.0", "cookie",&Duration::from_secs(20))?;
+    let raw_data = getwebpage(url, "", "Clash/1.0", "cookie",&Duration::from_secs(20),"")?;
     let yaml_data: serde_yaml::Value = if let Ok(value) = serde_yaml::from_str(&raw_data) {
         value
     } else {
