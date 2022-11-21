@@ -11,7 +11,7 @@ pub fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
             "socks5h://127.0.0.1:2670",
             "Dalvik/2.1.0 (Linux; U; Android 11; 21091116AC Build/RP1A.200720.011",
             "",
-            &Duration::from_secs(1),
+            &Duration::from_secs(2),
             "",
         )?;
         // println!("raw_data: {}", raw_data);

@@ -183,12 +183,13 @@ async fn main() {
                             for handle in handles {
                                 handle.await.unwrap_or_default();
                             }
+                            let delay_map = (*mutex_delay_map.lock().unwrap()).clone();
+                            DELAY_RST_SENDER.send(Arc::new(delay_map)).await.unwrap();
                         },
                         None => {
                             DELAY_RST_SENDER.send(Arc::new(HashMap::new())).await.unwrap();
                         }
                     }
-                    // for 
                 }
                 _ => {
                     panic!("unknown channel code")
