@@ -1,4 +1,4 @@
-allow-lan: false
+allow-lan: true
 bind-address: '*'
 dns:
   default-nameserver:
@@ -33,12 +33,12 @@ proxy-groups:
   - Default
 proxy-providers:
   Default:
-    path: ../output/sg.yaml
+    path: ../../output/sg.yaml
     type: file
     interval: 600
 rules:
-- DOMAIN-SUFFIX,bilibili.com,default
-- DOMAIN,bilibili.com,default
+- DOMAIN-SUFFIX,biliintl.com,default
+- DOMAIN,biliintl.com,default
 - SRC-IP-CIDR,192.168.1.201/32,DIRECT
 - IP-CIDR,127.0.0.0/8,DIRECT
 - MATCH,DIRECT

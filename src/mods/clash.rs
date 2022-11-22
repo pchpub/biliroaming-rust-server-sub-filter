@@ -1,26 +1,36 @@
 use std::{fs::File, process::Command, time::Duration, collections::HashMap};
 
+use tokio::task::spawn_blocking;
+
 use super::request::getwebpage;
 
-pub fn start_clash(config_path: &str) -> Result<String, ()> {
-    // let output = if let Ok(value) = Command::new("nohup").arg("./clash/clash").arg("-d").arg("./clash/").arg(">").arg("/dev/null").arg("&").arg("echo").arg("$!").output() {
-    let output = if let Ok(value) = Command::new("./clash/clash")
-        .arg("-d")
-        .arg(config_path)
-        .arg(">")
-        .arg("/dev/null")
-        .arg("&")
-        .arg("echo")
-        .arg("$!")
-        .output()
+pub async fn start_clash(config_path: &str) -> Result<String, ()> {
+    let config_path = config_path.to_owned();
+    match spawn_blocking(move || {
+        let output = if let Ok(value) = Command::new("./clash/clash")
+            .arg("-d")
+            .arg(&config_path)
+            .arg(">")
+            .arg("/dev/null")
+            .arg("&")
+            .arg("echo")
+            .arg("$!")
+            .output()
+        {
+            value
+        } else {
+            return Err(());
+        };
+        let output = String::from_utf8(output.stdout).unwrap_or("".to_owned());
+        println!("pid: {}", output);
+        return Ok(output);
+    })
+    .await
     {
-        value
-    } else {
-        return Err(());
-    };
-    let output = String::from_utf8(output.stdout).unwrap_or("".to_owned());
-    println!("pid: {}", output);
-    return Ok(output);
+        Ok(value) => value,
+        _ => Err(()),
+    }
+    
 }
 
 pub fn build_connectivity_yaml(node: &serde_yaml::Value) -> Result<(), ()> {

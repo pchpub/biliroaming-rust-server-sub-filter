@@ -27,15 +27,14 @@ lazy_static! {
 
 #[tokio::main]
 async fn main() {
-    let clash = tokio::spawn(async move { start_clash("./clash/") });
+    let clash = tokio::spawn(async move { start_clash("./clash/").await });
 
     let clash_for_connect = tokio::spawn(async move {
         if CONFIG.auto_mode {
             let mut handles = vec![];
-            // let config_paths = vec!["./clash/cn/","./clash/hk/","./clash/tw/","./clash/sg/","./clash/th/","./clash/mn/"];
             for path in &CONFIG.auto_mode_config_paths {
                 let clash = tokio::spawn(async move {
-                    start_clash(&path).unwrap();
+                    start_clash(&path).await.unwrap();
                 });
                 handles.push(clash);
             }
@@ -44,17 +43,13 @@ async fn main() {
             }
         }
     });
-    if CONFIG.auto_mode {
-        // let clash
-    }
 
     let check_connectivity_fn = tokio::spawn(async move {
-        // CLASH_SENDER.send(1).await.unwrap();
         sleep(Duration::from_secs(2)).await;
         loop {
             println!("[Debug] Start a new thread, type: 1");
             let config: Config =
-                serde_json::from_reader(File::open("config.json").unwrap()).unwrap(); // 这样改配置就不需要重启了，每次检查都获取新配置
+                serde_json::from_reader(File::open("config.json").unwrap()).unwrap(); // 这样改subs就不需要重启了，每次检查都获取新配置
             let mut cn_nodes: serde_yaml::Value = serde_yaml::from_str("proxies: []").unwrap();
             let mut hk_nodes = cn_nodes.clone();
             let mut tw_nodes = cn_nodes.clone();
@@ -76,7 +71,6 @@ async fn main() {
                 println!("[Info] build_delay_yaml failed");
             } else {
                 test_delay = true;
-                println!("-----60");
                 update_proxy_provider(
                     "http://127.0.0.1:2671/providers/proxies/TestDelay",
                     "",
@@ -161,9 +155,6 @@ async fn main() {
                     }
                 }
             }
-            // if let Some(countrys) = check_bili_area(&proxy_node).await {
-                
-            // }
             
             if test_delay {
                 // if let Ok(delay_map) = DELAY_RST_RECEIVER.recv().await {
@@ -217,7 +208,7 @@ async fn main() {
             serde_yaml::to_writer(File::create("./output/mn.yaml").unwrap(), &mn_nodes)
                 .unwrap_or_default();
             println!("fi");
-            sleep(Duration::from_secs(60 * 60)).await;
+            sleep(Duration::from_secs(60 * 60)).await; //每小时启动一次检查
         }
     });
 

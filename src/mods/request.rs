@@ -137,26 +137,26 @@ pub fn update_proxy_provider(
     return Some(putwebpage_string);
 }
 
-pub async fn get_node_delay(node_name: &str, authorization: &str) -> u64 {
-    let raw_data = if let Some(value) = getwebpage(
-        &format!("http://127.0.0.1:2671/proxies/{}/delay", node_name),
-        "",
-        "",
-        "",
-        &Duration::from_secs(60),
-        authorization,
-    ) {
-        value
-    } else {
-        return 0;
-    };
-    let json_data: serde_json::Value = if let Ok(value) = serde_json::from_str(&raw_data) {
-        value
-    } else {
-        return 0;
-    };
-    return json_data["delay"].as_u64().unwrap_or(0);
-}
+// pub async fn get_node_delay(node_name: &str, authorization: &str) -> u64 {
+//     let raw_data = if let Some(value) = getwebpage(
+//         &format!("http://127.0.0.1:2671/proxies/{}/delay", node_name),
+//         "",
+//         "",
+//         "",
+//         &Duration::from_secs(60),
+//         authorization,
+//     ) {
+//         value
+//     } else {
+//         return 0;
+//     };
+//     let json_data: serde_json::Value = if let Ok(value) = serde_json::from_str(&raw_data) {
+//         value
+//     } else {
+//         return 0;
+//     };
+//     return json_data["delay"].as_u64().unwrap_or(0);
+// }
 
 pub async fn get_nodes_delay() -> Option<HashMap<String, u64>> {
     let json_data: serde_json::Value = if let Ok(value) = serde_json::from_str(&async_getwebpage("http://127.0.0.1:2671/group/delay/delay?url=http://www.gstatic.com/generate_202&timeout=20000", "", "", "", &Duration::from_secs(60), "JCasbciSCBAISw").await.unwrap_or_default()){

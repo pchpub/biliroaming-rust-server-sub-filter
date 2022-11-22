@@ -1,4 +1,4 @@
-allow-lan: false
+allow-lan: true
 bind-address: '*'
 dns:
   default-nameserver:
@@ -33,7 +33,7 @@ proxy-groups:
   - Default
 proxy-providers:
   Default:
-    path: ../output/tw.yaml
+    path: ../../output/tw.yaml
     type: file
     interval: 600
 rules:

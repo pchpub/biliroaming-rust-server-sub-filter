@@ -1,3 +1,5 @@
 {
-    "subs":[""]
-}
+    "subs":[""],
+    "auto_mode": false,
+    "auto_mode_config_paths": ["./clash/cn/","./clash/hk/","./clash/tw/","./clash/sg/","./clash/th/","./clash/mn/"]
+} 
