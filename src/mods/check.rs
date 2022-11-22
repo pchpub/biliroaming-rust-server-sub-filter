@@ -5,7 +5,19 @@ use crate::mods::request::{update_proxy_provider, async_getwebpage};
 use super::{clash::build_connectivity_yaml};
 
 pub async fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
-    async fn check_main() -> Option<Country> {
+    async fn check_main(node: &serde_yaml::Value) -> Option<Country> {
+        match build_connectivity_yaml(node) {
+            Ok(_) => (),
+            Err(_) => return None,
+        }
+        update_proxy_provider(
+            "http://127.0.0.1:2671/providers/proxies/TestConnectivity",
+            "",
+            "",
+            "",
+            "JCasbciSCBAISw",
+        )
+        .unwrap_or_default();
         let raw_data = async_getwebpage(
             "http://api.bilibili.com/x/web-interface/zone",
             "socks5h://127.0.0.1:2670",
@@ -28,6 +40,18 @@ pub async fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
         ));
     }
     async fn check_th(node: &serde_yaml::Value) -> Option<Country> {
+        match build_connectivity_yaml(node) {
+            Ok(_) => (),
+            Err(_) => return None,
+        }
+        update_proxy_provider(
+            "http://127.0.0.1:2671/providers/proxies/TestConnectivity",
+            "",
+            "",
+            "",
+            "JCasbciSCBAISw",
+        )
+        .unwrap_or_default();
         let raw_data = async_getwebpage(
             "http://ip-api.com/json/?fields=status,countryCode,query",
             "socks5h://127.0.0.1:2670",
@@ -53,20 +77,8 @@ pub async fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
             json_data["countryCode"].as_str().unwrap_or(""),
         ));
     }
-    match build_connectivity_yaml(node) {
-        Ok(_) => (),
-        Err(_) => return None,
-    }
-    update_proxy_provider(
-        "http://127.0.0.1:2671/providers/proxies/TestConnectivity",
-        "",
-        "",
-        "",
-        "JCasbciSCBAISw",
-    )
-    .unwrap_or_default();
     let mut countrys = Vec::with_capacity(2);
-    if let Some(value) = check_main().await {
+    if let Some(value) = check_main(node).await {
         match value {
             Country::China => countrys.push(value),
             Country::Taiwan => countrys.push(value),

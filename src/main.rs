@@ -68,7 +68,6 @@ async fn main() {
                 .unwrap_or_default();
                 // DELAY_SENDER.send(1).await.unwrap();
             };
-            println!("-----63");
             let mutex_proxy_list = Arc::new(Mutex::new(proxy_list));
             let mutex_proxy_rst_list: Arc<Mutex<HashMap<serde_yaml::Value, Vec<Country>>>> = Arc::new(Mutex::new(HashMap::new()));
             let mut check_area_handles = vec![];
