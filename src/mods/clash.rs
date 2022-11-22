@@ -1,4 +1,4 @@
-use std::{fs::File, process::Command, time::Duration};
+use std::{fs::File, process::Command, time::Duration, collections::HashMap};
 
 use super::request::getwebpage;
 
@@ -49,11 +49,13 @@ pub fn build_delay_yaml(nodes: &Vec<serde_yaml::Value>) -> Result<(), ()> {
     }
 }
 
-pub async fn get_delay_nodes() -> Option<Vec<serde_json::Value>> {
-    let json_data: serde_json::Value = if let Ok(value) = serde_json::from_str(&getwebpage("http://127.0.0.1:2671/providers/proxies/TestDelay", "", "", "", &Duration::from_secs(5), "JCasbciSCBAISw").unwrap_or_default()){
+pub async fn get_delay_nodes() -> Option<HashMap<String,u64>> {
+    let json_data: serde_json::Value = if let Ok(value) = serde_json::from_str(&getwebpage("http://127.0.0.1:2671/group/delay/delay?url=http://www.gstatic.com/generate_202&timeout=20000", "", "", "", &Duration::from_secs(60), "JCasbciSCBAISw").unwrap_or_default()){
         value
     }else{
         return None;
     };
-    return Some(json_data["proxies"].as_array().unwrap().clone());
+    return Some(json_data.as_object().unwrap().iter().map(|a|{
+        (a.0.clone(),a.1.as_u64().unwrap_or(0))
+    }).collect());
 }

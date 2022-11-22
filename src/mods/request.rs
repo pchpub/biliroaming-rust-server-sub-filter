@@ -1,5 +1,6 @@
-use std::time::Duration;
 use curl::easy::{Easy, List};
+use std::{collections::HashMap, time::Duration};
+use tokio::task::spawn_blocking;
 
 pub fn getwebpage(
     url: &str,
@@ -21,7 +22,9 @@ pub fn getwebpage(
     handle.proxy(proxy_url).unwrap();
     if authorization.len() != 0 {
         let mut headers_list = List::new();
-        headers_list.append(&format!("Authorization: Bearer {authorization}")).unwrap();
+        headers_list
+            .append(&format!("Authorization: Bearer {authorization}"))
+            .unwrap();
         handle.http_headers(headers_list).unwrap();
     }
 
@@ -36,7 +39,7 @@ pub fn getwebpage(
         match transfer.perform() {
             Ok(()) => (),
             Err(value) => {
-                println!("[Debug] getwebpage error{}",value);
+                println!("[Debug] getwebpage error{}", value);
                 return None;
             }
         }
@@ -49,6 +52,37 @@ pub fn getwebpage(
         }
     };
     return Some(getwebpage_string);
+}
+
+pub async fn async_getwebpage(
+    url: &str,
+    proxy_url: &str,
+    user_agent: &str,
+    cookie: &str,
+    timeout: &Duration,
+    authorization: &str,
+) -> Option<String> {
+    let url = url.to_owned();
+    let proxy_url = proxy_url.to_owned();
+    let user_agent = user_agent.to_owned();
+    let cookie = cookie.to_owned();
+    let timeout = timeout.to_owned();
+    let authorization = authorization.to_owned();
+    match spawn_blocking(move || {
+        getwebpage(
+            &url,
+            &proxy_url,
+            &user_agent,
+            &cookie,
+            &timeout,
+            &authorization,
+        )
+    })
+    .await
+    {
+        Ok(value) => value,
+        _ => return None,
+    }
 }
 
 pub fn update_proxy_provider(
@@ -71,7 +105,9 @@ pub fn update_proxy_provider(
     handle.cookie(cookie).unwrap();
     handle.proxy(proxy_url).unwrap();
     headers_list.append("Content-Length: 0").unwrap();
-    headers_list.append(&format!("Authorization: Bearer {authorization}")).unwrap();
+    headers_list
+        .append(&format!("Authorization: Bearer {authorization}"))
+        .unwrap();
     handle.http_headers(headers_list).unwrap();
 
     {
@@ -85,7 +121,7 @@ pub fn update_proxy_provider(
         match transfer.perform() {
             Ok(()) => (),
             Err(value) => {
-                println!("[Debug] update_proxy_provider error:{}",value);
+                println!("[Debug] update_proxy_provider error:{}", value);
                 return None;
             }
         }
@@ -101,17 +137,39 @@ pub fn update_proxy_provider(
     return Some(putwebpage_string);
 }
 
-pub async fn get_node_delay(node_name: &str,authorization: &str) -> u64 {
-    let raw_data = if let Some(value) = getwebpage(&format!("http://127.0.0.1:2671/proxies/{}/delay",node_name), "", "", "", &Duration::from_secs(60), authorization){
+pub async fn get_node_delay(node_name: &str, authorization: &str) -> u64 {
+    let raw_data = if let Some(value) = getwebpage(
+        &format!("http://127.0.0.1:2671/proxies/{}/delay", node_name),
+        "",
+        "",
+        "",
+        &Duration::from_secs(60),
+        authorization,
+    ) {
         value
-    }else{
+    } else {
         return 0;
     };
     let json_data: serde_json::Value = if let Ok(value) = serde_json::from_str(&raw_data) {
         value
-    }else{
+    } else {
         return 0;
     };
     return json_data["delay"].as_u64().unwrap_or(0);
 }
 
+pub async fn get_nodes_delay() -> Option<HashMap<String, u64>> {
+    let json_data: serde_json::Value = if let Ok(value) = serde_json::from_str(&async_getwebpage("http://127.0.0.1:2671/group/delay/delay?url=http://www.gstatic.com/generate_202&timeout=20000", "", "", "", &Duration::from_secs(60), "JCasbciSCBAISw").await.unwrap_or_default()){
+        value
+    }else{
+        return None;
+    };
+    return Some(
+        json_data
+            .as_object()
+            .unwrap()
+            .iter()
+            .map(|a| (a.0.clone(), a.1.as_u64().unwrap_or(0)))
+            .collect(),
+    );
+}

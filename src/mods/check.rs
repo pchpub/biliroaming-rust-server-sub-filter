@@ -1,19 +1,19 @@
 use std::time::Duration;
 
-use crate::mods::request::update_proxy_provider;
+use crate::mods::request::{update_proxy_provider, async_getwebpage};
 
-use super::{clash::build_connectivity_yaml, request::getwebpage};
+use super::{clash::build_connectivity_yaml};
 
-pub fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
-    fn check_main() -> Option<Country> {
-        let raw_data = getwebpage(
+pub async fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
+    async fn check_main() -> Option<Country> {
+        let raw_data = async_getwebpage(
             "http://api.bilibili.com/x/web-interface/zone",
             "socks5h://127.0.0.1:2670",
             "Dalvik/2.1.0 (Linux; U; Android 11; 21091116AC Build/RP1A.200720.011",
             "",
             &Duration::from_secs(2),
             "",
-        )?;
+        ).await?;
         // println!("raw_data: {}", raw_data);
         let json_data: serde_json::Value = if let Ok(value) = serde_json::from_str(&raw_data) {
             value
@@ -27,15 +27,15 @@ pub fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
             json_data["data"]["country_code"].as_i64().unwrap_or(0),
         ));
     }
-    fn check_th(node: &serde_yaml::Value) -> Option<Country> {
-        let raw_data = getwebpage(
+    async fn check_th(node: &serde_yaml::Value) -> Option<Country> {
+        let raw_data = async_getwebpage(
             "http://ip-api.com/json/?fields=status,countryCode,query",
             "socks5h://127.0.0.1:2670",
             "Dalvik/2.1.0 (Linux; U; Android 11; 21091116AC Build/RP1A.200720.011",
             "",
             &Duration::from_secs(1),
             "",
-        )?;
+        ).await?;
         println!(
             "{} -> ip-api raw_data: {}",
             node["name"].as_str().unwrap(),
@@ -66,7 +66,7 @@ pub fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
     )
     .unwrap_or_default();
     let mut countrys = Vec::with_capacity(2);
-    if let Some(value) = check_main() {
+    if let Some(value) = check_main().await {
         match value {
             Country::China => countrys.push(value),
             Country::Taiwan => countrys.push(value),
@@ -74,7 +74,7 @@ pub fn check_bili_area(node: &serde_yaml::Value) -> Option<Vec<Country>> {
             _ => (),
         }
     }
-    if let Some(value) = check_th(node) {
+    if let Some(value) = check_th(node).await {
         match value {
             Country::China => (),
             Country::Taiwan => (),
