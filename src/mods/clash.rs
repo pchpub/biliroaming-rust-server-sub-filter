@@ -2,11 +2,11 @@ use std::{fs::File, process::Command, time::Duration, collections::HashMap};
 
 use super::request::getwebpage;
 
-pub fn start_clash() -> Result<String, ()> {
+pub fn start_clash(config_path: &str) -> Result<String, ()> {
     // let output = if let Ok(value) = Command::new("nohup").arg("./clash/clash").arg("-d").arg("./clash/").arg(">").arg("/dev/null").arg("&").arg("echo").arg("$!").output() {
     let output = if let Ok(value) = Command::new("./clash/clash")
         .arg("-d")
-        .arg("./clash/")
+        .arg(config_path)
         .arg(">")
         .arg("/dev/null")
         .arg("&")

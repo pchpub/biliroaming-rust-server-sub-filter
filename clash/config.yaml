@@ -13,7 +13,7 @@ dns:
   fallback-filter:
     geoip: true
     geoip-code: CN
-  listen: 0.0.0.0:53
+  # listen: 0.0.0.0:53
   nameserver:
   - 119.29.29.29
   - 223.5.5.5

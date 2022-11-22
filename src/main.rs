@@ -27,7 +27,26 @@ lazy_static! {
 
 #[tokio::main]
 async fn main() {
-    let clash = tokio::spawn(async move { start_clash() });
+    let clash = tokio::spawn(async move { start_clash("./clash/") });
+
+    let clash_for_connect = tokio::spawn(async move {
+        if CONFIG.auto_mode {
+            let mut handles = vec![];
+            // let config_paths = vec!["./clash/cn/","./clash/hk/","./clash/tw/","./clash/sg/","./clash/th/","./clash/mn/"];
+            for path in &CONFIG.auto_mode_config_paths {
+                let clash = tokio::spawn(async move {
+                    start_clash(&path).unwrap();
+                });
+                handles.push(clash);
+            }
+            for handle in handles {
+                handle.await.unwrap();
+            }
+        }
+    });
+    if CONFIG.auto_mode {
+        // let clash
+    }
 
     let check_connectivity_fn = tokio::spawn(async move {
         // CLASH_SENDER.send(1).await.unwrap();
@@ -274,5 +293,5 @@ async fn main() {
     //     }
     // });
 
-    join!(clash, check_connectivity_fn).1.unwrap_or_default();
+    join!(clash, check_connectivity_fn,clash_for_connect).1.unwrap_or_default();
 }
