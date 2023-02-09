@@ -84,7 +84,7 @@ async fn main() {
             let mutex_proxy_list = Arc::new(Mutex::new(proxy_list));
             let mutex_proxy_rst_list: Arc<Mutex<HashMap<serde_yaml::Value, Vec<Country>>>> = Arc::new(Mutex::new(HashMap::new()));
             let mut check_area_handles = vec![];
-            for _i in 0..10 { //10个同时
+            for _i in 0..1 { //10个同时
                 let new_mutex_proxy_list = mutex_proxy_list.clone();
                 let new_mutex_proxy_rst_list = mutex_proxy_rst_list.clone();
                 let check: JoinHandle<Result<(),()>> = tokio::spawn(async move {
